@@ -1337,6 +1337,259 @@ int main() {
 }`
     },
 
+    bfs: {
+      python: `from collections import deque
+
+# 인접 리스트: graph[노드] = [연결된 노드들]
+graph = {
+    0: [1, 2],
+    1: [0, 3],
+    2: [0, 3],
+    3: [1, 2, 4],
+    4: [3],
+}
+
+
+def bfs(graph, start):
+    visited = {start}
+    queue = deque([start])
+    order = []
+
+    while queue:
+        node = queue.popleft()      # 맨 앞에서 꺼냄
+        order.append(node)
+
+        for nxt in graph[node]:
+            if nxt not in visited:
+                visited.add(nxt)
+                queue.append(nxt)   # 맨 뒤에 추가
+    return order
+
+
+print(bfs(graph, 0))   # [0, 1, 2, 3, 4]`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+// 인접 리스트: graph[노드] = 연결된 노드들
+vector<vector<int>> graph = {
+    {1, 2},      // 0번 노드
+    {0, 3},      // 1번
+    {0, 3},      // 2번
+    {1, 2, 4},   // 3번
+    {3}          // 4번
+};
+
+vector<int> bfs(int start) {
+    vector<bool> visited(graph.size(), false);
+    queue<int> q;
+    vector<int> order;
+
+    visited[start] = true;
+    q.push(start);
+
+    while (!q.empty()) {
+        int node = q.front(); q.pop();   // 맨 앞에서 꺼냄
+        order.push_back(node);
+
+        for (int nxt : graph[node]) {
+            if (!visited[nxt]) {
+                visited[nxt] = true;
+                q.push(nxt);             // 맨 뒤에 추가
+            }
+        }
+    }
+    return order;
+}
+
+int main() {
+    for (int x : bfs(0)) cout << x << " ";   // 0 1 2 3 4
+}`
+    },
+
+    dfs: {
+      python: `graph = {
+    0: [1, 2],
+    1: [0, 3],
+    2: [0, 3],
+    3: [1, 2, 4],
+    4: [3],
+}
+
+
+# 방법 1: 스택으로 구현
+def dfs_stack(graph, start):
+    visited = set()
+    stack = [start]
+    order = []
+
+    while stack:
+        node = stack.pop()       # 맨 위에서 꺼냄
+        if node in visited:
+            continue
+        visited.add(node)
+        order.append(node)
+
+        # 작은 번호부터 방문하려면 역순으로 넣습니다
+        for nxt in reversed(graph[node]):
+            if nxt not in visited:
+                stack.append(nxt)
+    return order
+
+
+# 방법 2: 재귀로 구현 (더 간결합니다)
+def dfs_recursive(graph, node, visited=None, order=None):
+    if visited is None:
+        visited, order = set(), []
+    visited.add(node)
+    order.append(node)
+
+    for nxt in graph[node]:
+        if nxt not in visited:
+            dfs_recursive(graph, nxt, visited, order)
+    return order
+
+
+print(dfs_stack(graph, 0))
+print(dfs_recursive(graph, 0))`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <stack>
+using namespace std;
+
+vector<vector<int>> graph = {
+    {1, 2}, {0, 3}, {0, 3}, {1, 2, 4}, {3}
+};
+vector<bool> visited;
+
+// 방법 1: 스택으로 구현
+vector<int> dfsStack(int start) {
+    visited.assign(graph.size(), false);
+    stack<int> s;
+    vector<int> order;
+    s.push(start);
+
+    while (!s.empty()) {
+        int node = s.top(); s.pop();   // 맨 위에서 꺼냄
+        if (visited[node]) continue;
+        visited[node] = true;
+        order.push_back(node);
+
+        // 작은 번호부터 방문하려면 역순으로 넣습니다
+        for (int i = graph[node].size() - 1; i >= 0; i--)
+            if (!visited[graph[node][i]]) s.push(graph[node][i]);
+    }
+    return order;
+}
+
+// 방법 2: 재귀로 구현 (더 간결합니다)
+void dfsRecursive(int node, vector<int>& order) {
+    visited[node] = true;
+    order.push_back(node);
+    for (int nxt : graph[node])
+        if (!visited[nxt]) dfsRecursive(nxt, order);
+}
+
+int main() {
+    for (int x : dfsStack(0)) cout << x << " ";
+    cout << endl;
+
+    visited.assign(graph.size(), false);
+    vector<int> order;
+    dfsRecursive(0, order);
+    for (int x : order) cout << x << " ";
+}`
+    },
+
+    dijkstra: {
+      python: `import heapq
+
+# 가중치 그래프: graph[노드] = [(이웃, 거리), ...]
+graph = {
+    0: [(1, 4), (2, 1)],
+    1: [(0, 4), (3, 2)],
+    2: [(0, 1), (3, 5)],
+    3: [(1, 2), (2, 5), (4, 3)],
+    4: [(3, 3)],
+}
+
+
+def dijkstra(graph, start):
+    # 모든 거리를 무한대로 두고 시작점만 0
+    dist = {node: float('inf') for node in graph}
+    dist[start] = 0
+
+    # 우선순위 큐: (거리, 노드) - 거리가 짧은 것부터 꺼내집니다
+    pq = [(0, start)]
+
+    while pq:
+        cur_dist, node = heapq.heappop(pq)
+
+        # 이미 더 짧은 경로를 찾았다면 건너뜁니다
+        if cur_dist > dist[node]:
+            continue
+
+        for nxt, weight in graph[node]:
+            new_dist = cur_dist + weight
+            # 이 노드를 거쳐가는 게 더 짧으면 갱신
+            if new_dist < dist[nxt]:
+                dist[nxt] = new_dist
+                heapq.heappush(pq, (new_dist, nxt))
+    return dist
+
+
+print(dijkstra(graph, 0))
+# {0: 0, 1: 4, 2: 1, 3: 6, 4: 9}`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <queue>
+#include <climits>
+using namespace std;
+
+// 가중치 그래프: graph[노드] = {(이웃, 거리), ...}
+vector<vector<pair<int,int>>> graph = {
+    {{1,4},{2,1}},
+    {{0,4},{3,2}},
+    {{0,1},{3,5}},
+    {{1,2},{2,5},{4,3}},
+    {{3,3}}
+};
+
+vector<int> dijkstra(int start) {
+    int n = graph.size();
+    vector<int> dist(n, INT_MAX);
+    dist[start] = 0;
+
+    // 거리가 짧은 것부터 꺼내는 우선순위 큐
+    priority_queue<pair<int,int>,
+                   vector<pair<int,int>>,
+                   greater<pair<int,int>>> pq;
+    pq.push({0, start});
+
+    while (!pq.empty()) {
+        auto [curDist, node] = pq.top(); pq.pop();
+
+        // 이미 더 짧은 경로를 찾았다면 건너뜁니다
+        if (curDist > dist[node]) continue;
+
+        for (auto [nxt, weight] : graph[node]) {
+            int newDist = curDist + weight;
+            // 이 노드를 거쳐가는 게 더 짧으면 갱신
+            if (newDist < dist[nxt]) {
+                dist[nxt] = newDist;
+                pq.push({newDist, nxt});
+            }
+        }
+    }
+    return dist;
+}
+
+int main() {
+    for (int d : dijkstra(0)) cout << d << " ";   // 0 4 1 6 9
+}`
+    },
+
     stack: {
       python: `# 파이썬은 리스트를 스택처럼 그대로 쓸 수 있습니다
 stack = []
@@ -3362,6 +3615,7 @@ int main() {
         if(category === "ds") rebuildDs(a.key);
         else if(category === "concept"){ currentAlgo = a.key; renderConcept(a.key); }
         else rebuild(a.key);
+        updateUrlHash();
       });
       algoTabsEl.appendChild(btn);
     });
@@ -3515,7 +3769,10 @@ int main() {
   // 이벤트
   // ===================================================================
   document.querySelectorAll(".category-tab").forEach(tab => {
-    tab.addEventListener("click", () => switchCategory(tab.dataset.category));
+    tab.addEventListener("click", () => {
+      switchCategory(tab.dataset.category);
+      updateUrlHash();
+    });
   });
 
   document.querySelectorAll(".explain-toggle-btn[data-mode]").forEach(btn => {
@@ -3614,11 +3871,48 @@ int main() {
   window.addEventListener("resize", resizeCanvas);
 
   // ===================================================================
+  // URL 주소에 현재 탭을 기록 (새로고침해도 유지되고, 링크로 공유할 수 있습니다)
+  // ===================================================================
+  function updateUrlHash(){
+    const hash = `#${category}/${currentAlgo}`;
+    if(window.location.hash !== hash){
+      history.replaceState(null, "", hash);
+    }
+  }
+
+  function applyUrlHash(){
+    const raw = (window.location.hash || "").replace(/^#/, "");
+    if(!raw) return false;
+
+    const [cat, algo] = raw.split("/");
+    if(!algoList[cat]) return false;
+
+    switchCategory(cat);
+
+    // 세부 알고리즘까지 지정되어 있으면 그 탭으로 전환합니다
+    const exists = algo && algoList[cat].some(a => a.key === algo);
+    if(exists && algo !== currentAlgo){
+      algoTabsEl.querySelectorAll(".algo-tab").forEach(t => {
+        t.classList.toggle("active", t.dataset.algo === algo);
+      });
+      if(cat === "ds") rebuildDs(algo);
+      else if(cat === "concept"){ currentAlgo = algo; renderConcept(algo); }
+      else rebuild(algo);
+    }
+    return true;
+  }
+
+  window.addEventListener("hashchange", applyUrlHash);
+
+  // ===================================================================
   // 초기화
   // ===================================================================
   renderAlgoTabs();
   array = genArray(20);
   rebuild("bubble");
+
+  // 주소에 탭 정보가 있으면 그 탭으로 시작합니다
+  applyUrlHash();
 })();
 </script>
 </body>
