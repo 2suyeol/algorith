@@ -585,6 +585,92 @@
     height:300px;
   }
 
+  /* 개념 설명 탭 */
+  .concept-body{ padding:4px 2px; }
+  .concept-section{ margin-bottom:34px; }
+  .concept-section:last-child{ margin-bottom:6px; }
+  .concept-h{
+    font-size:17px;
+    font-weight:700;
+    color:var(--ink);
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+  .concept-p{
+    font-size:14px;
+    line-height:1.75;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+  }
+  .concept-p b{ color:var(--ink); font-weight:600; }
+  .concept-note{
+    font-size:13.5px;
+    line-height:1.7;
+    color:var(--ink-soft);
+    background:var(--paper);
+    border-left:3px solid var(--compare);
+    border-radius:0 8px 8px 0;
+    padding:12px 16px;
+    margin:14px 0 0;
+  }
+
+  .concept-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:14px;
+    font-size:13px;
+  }
+  .concept-table th,
+  .concept-table td{
+    text-align:left;
+    padding:9px 12px;
+    border-bottom:1px solid var(--line);
+  }
+  .concept-table th{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    background:var(--paper);
+  }
+  .concept-table td{ color:var(--ink-soft); }
+  .concept-table td:first-child{
+    font-family:var(--mono);
+    font-weight:600;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+  .concept-table tr:last-child td{ border-bottom:none; }
+
+  .concept-chart{
+    width:100%;
+    margin-top:16px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 12px 10px;
+  }
+  .concept-chart svg{ width:100%; height:260px; display:block; }
+  .concept-legend{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-top:10px;
+    padding-left:4px;
+  }
+  .concept-legend span{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .concept-legend i{
+    width:14px; height:3px; border-radius:2px; display:inline-block;
+  }
+
   /* 페이지 하단 예시 코드 */
   .code-section{
     margin-top:28px;
@@ -694,6 +780,7 @@
       <button class="category-tab active" data-category="sort">정렬</button>
       <button class="category-tab" data-category="graph">그래프 탐색</button>
       <button class="category-tab" data-category="ds">자료구조</button>
+      <button class="category-tab" data-category="concept">개념</button>
     </div>
 
     <div class="algo-tabs" id="algoTabs" role="tablist" aria-label="알고리즘 선택">
@@ -701,7 +788,7 @@
     </div>
   </header>
 
-  <div class="explain-box">
+  <div class="explain-box" id="explainBox">
     <div class="explain-head">
       <span class="explain-title" id="explainTitle"></span>
       <div class="explain-toggle" role="tablist" aria-label="설명 분량 선택">
@@ -828,6 +915,10 @@
     </div>
   </div>
 
+  <div class="stage" id="conceptStage" style="display:none;">
+    <div class="concept-body" id="conceptBody"></div>
+  </div>
+
   <div class="code-section" id="codeSection">
     <div class="code-head">
       <span class="code-title" id="codeTitle">예시 코드</span>
@@ -910,7 +1001,153 @@
   // ===================================================================
   // 알고리즘 목록 / 설명 데이터
   // ===================================================================
-  // 알고리즘·자료구조별 Python / C++ 예시 코드
+  // 개념 설명 탭 콘텐츠
+  const conceptContent = {
+    bigO: () => `
+      <div class="concept-section">
+        <h3 class="concept-h">시간복잡도란?</h3>
+        <p class="concept-p">
+          같은 문제를 푸는 방법이 여러 가지일 때, 어떤 방법이 더 빠른지 비교해야 합니다.
+          그런데 "몇 초 걸린다"로 재면 컴퓨터 성능에 따라 결과가 달라지죠.
+          그래서 <b>데이터가 늘어날 때 계산 횟수가 얼마나 빨리 늘어나는지</b>로 비교합니다. 이게 시간복잡도입니다.
+        </p>
+        <p class="concept-p">
+          예를 들어 데이터가 10개에서 100개로 10배 늘었을 때,
+          어떤 방법은 계산도 10배만 늘지만(O(n)),
+          어떤 방법은 100배나 늘어납니다(O(n²)). 데이터가 커질수록 이 차이는 어마어마해집니다.
+        </p>
+      </div>
+
+      <div class="concept-section">
+        <h3 class="concept-h">빅오(Big-O) 표기법</h3>
+        <p class="concept-p">
+          시간복잡도를 적을 때 <b>O(...)</b> 라고 씁니다. 여기엔 두 가지 약속이 있습니다.
+        </p>
+        <table class="concept-table">
+          <tr><th>규칙</th><th>설명</th></tr>
+          <tr><td>상수 무시</td><td>2n번 계산하든 5n번 계산하든 모두 O(n)으로 적습니다. 데이터가 커질 때의 "증가 속도"만 보기 때문입니다.</td></tr>
+          <tr><td>가장 큰 항만</td><td>n² + n + 10 이면 그냥 O(n²)입니다. n이 커지면 n²에 비해 나머지는 무시할 만큼 작아집니다.</td></tr>
+        </table>
+        <p class="concept-note">
+          빅오는 보통 <b>최악의 경우</b>를 기준으로 합니다. "아무리 운이 나빠도 이 정도 안에는 끝난다"는 보장이기 때문입니다.
+        </p>
+      </div>
+
+      <div class="concept-section">
+        <h3 class="concept-h">자주 나오는 복잡도</h3>
+        <table class="concept-table">
+          <tr><th>표기</th><th>이름</th><th>예시</th></tr>
+          <tr><td>O(1)</td><td>상수 시간</td><td>배열에서 arr[5] 꺼내기 — 데이터가 아무리 많아도 한 번에</td></tr>
+          <tr><td>O(log n)</td><td>로그 시간</td><td>이진 탐색 — 볼 범위를 매번 절반으로 줄임</td></tr>
+          <tr><td>O(n)</td><td>선형 시간</td><td>배열 전체를 한 번 훑기</td></tr>
+          <tr><td>O(n log n)</td><td>선형 로그 시간</td><td>병합 정렬, 퀵 정렬(평균)</td></tr>
+          <tr><td>O(n²)</td><td>이차 시간</td><td>버블·선택·삽입 정렬 — 이중 반복문</td></tr>
+          <tr><td>O(2ⁿ)</td><td>지수 시간</td><td>모든 조합을 다 시도 — 데이터가 조금만 커져도 감당 불가</td></tr>
+        </table>
+      </div>
+    `,
+
+    space: () => `
+      <div class="concept-section">
+        <h3 class="concept-h">공간복잡도란?</h3>
+        <p class="concept-p">
+          시간복잡도가 "얼마나 오래 걸리나"라면, 공간복잡도는 <b>계산하는 동안 메모리를 얼마나 더 쓰나</b>입니다.
+          역시 데이터 개수 n이 늘어날 때 추가 메모리가 얼마나 늘어나는지로 표현합니다.
+        </p>
+        <p class="concept-p">
+          여기서 중요한 건 <b>입력 데이터 자체는 세지 않는다</b>는 점입니다.
+          정렬할 배열 n개는 원래 있어야 하는 것이고, 그 외에 <b>추가로</b> 얼마나 더 필요한지를 봅니다.
+        </p>
+      </div>
+
+      <div class="concept-section">
+        <h3 class="concept-h">예시로 보기</h3>
+        <table class="concept-table">
+          <tr><th>복잡도</th><th>의미</th><th>예시</th></tr>
+          <tr><td>O(1)</td><td>추가 메모리가 거의 없음</td><td>버블·선택·삽입 정렬 — 값 두 개 바꿀 임시 변수 하나면 충분</td></tr>
+          <tr><td>O(log n)</td><td>재귀 호출 깊이만큼</td><td>퀵 정렬 — 재귀가 쌓이는 깊이가 대략 log n</td></tr>
+          <tr><td>O(n)</td><td>데이터만큼 더 필요</td><td>병합 정렬 — 두 조각을 합칠 임시 배열이 필요</td></tr>
+        </table>
+        <p class="concept-note">
+          병합 정렬은 항상 O(n log n)으로 빠르지만 메모리를 O(n)만큼 더 씁니다.
+          반대로 퀵 정렬은 메모리를 적게 쓰죠. 이렇게 <b>시간과 공간은 서로 맞바꾸는 관계</b>인 경우가 많습니다.
+        </p>
+      </div>
+    `,
+
+    compare: () => `
+      <div class="concept-section">
+        <h3 class="concept-h">복잡도가 커지는 속도 비교</h3>
+        <p class="concept-p">
+          아래 그래프는 데이터 개수(n)가 늘어날 때 각 복잡도의 계산 횟수가 얼마나 빨리 증가하는지 보여줍니다.
+          처음엔 비슷해 보여도 n이 커질수록 격차가 급격히 벌어집니다.
+        </p>
+        <div class="concept-chart" id="complexityChart"></div>
+        <div class="concept-legend">
+          <span><i style="background:#5B8C6E"></i>O(log n)</span>
+          <span><i style="background:#3F5A4C"></i>O(n)</span>
+          <span><i style="background:#D98E48"></i>O(n log n)</span>
+          <span><i style="background:#B5483A"></i>O(n²)</span>
+        </div>
+      </div>
+
+      <div class="concept-section">
+        <h3 class="concept-h">숫자로 실감하기</h3>
+        <p class="concept-p">데이터 개수에 따라 실제 계산 횟수가 얼마나 차이나는지 봅시다.</p>
+        <table class="concept-table">
+          <tr><th>n</th><th>O(log n)</th><th>O(n)</th><th>O(n log n)</th><th>O(n²)</th></tr>
+          <tr><td>10</td><td>3</td><td>10</td><td>33</td><td>100</td></tr>
+          <tr><td>100</td><td>7</td><td>100</td><td>664</td><td>10,000</td></tr>
+          <tr><td>1,000</td><td>10</td><td>1,000</td><td>9,966</td><td>1,000,000</td></tr>
+          <tr><td>10,000</td><td>13</td><td>10,000</td><td>132,877</td><td>100,000,000</td></tr>
+        </table>
+        <p class="concept-note">
+          n이 10,000일 때 O(n²)은 1억 번입니다. O(n log n)은 13만 번 정도죠.
+          <b>약 750배 차이</b>입니다. 데이터가 많아질수록 알고리즘 선택이 결정적인 이유입니다.
+        </p>
+      </div>
+    `,
+
+    stability: () => `
+      <div class="concept-section">
+        <h3 class="concept-h">안정 정렬이란?</h3>
+        <p class="concept-p">
+          <b>값이 같은 원소들의 원래 순서가 정렬 후에도 그대로 유지되면</b> 안정 정렬이라고 합니다.
+          숫자만 정렬할 땐 티가 안 나지만, 여러 정보를 가진 데이터를 정렬할 때 중요해집니다.
+        </p>
+      </div>
+
+      <div class="concept-section">
+        <h3 class="concept-h">왜 중요한가요?</h3>
+        <p class="concept-p">
+          학생 명단을 <b>이름순으로 먼저 정렬</b>한 뒤, 다시 <b>점수순으로 정렬</b>한다고 해봅시다.
+        </p>
+        <table class="concept-table">
+          <tr><th>정렬 전</th><th>안정 정렬 결과</th><th>불안정 정렬 결과</th></tr>
+          <tr><td>강민 90</td><td>강민 90</td><td>박준 90</td></tr>
+          <tr><td>박준 90</td><td>박준 90</td><td>강민 90</td></tr>
+          <tr><td>이서 85</td><td>이서 85</td><td>이서 85</td></tr>
+        </table>
+        <p class="concept-p">
+          안정 정렬은 점수가 같은 강민·박준의 <b>이름순(강민 → 박준)이 그대로 유지</b>됩니다.
+          불안정 정렬은 이 순서가 뒤바뀔 수 있어서, 앞서 해둔 이름순 정렬이 의미를 잃습니다.
+        </p>
+      </div>
+
+      <div class="concept-section">
+        <h3 class="concept-h">정렬별 안정성</h3>
+        <table class="concept-table">
+          <tr><th>정렬</th><th>안정성</th><th>이유</th></tr>
+          <tr><td>버블 정렬</td><td>안정</td><td>이웃한 값이 서로 다를 때만 교환하므로 같은 값끼리는 순서가 안 바뀝니다</td></tr>
+          <tr><td>삽입 정렬</td><td>안정</td><td>같은 값을 만나면 더 왼쪽으로 가지 않고 멈춥니다</td></tr>
+          <tr><td>병합 정렬</td><td>안정</td><td>두 조각을 합칠 때 같은 값이면 왼쪽 조각을 먼저 넣습니다</td></tr>
+          <tr><td>선택 정렬</td><td>불안정</td><td>멀리 떨어진 최솟값과 자리를 바꾸다가 같은 값의 순서를 넘어설 수 있습니다</td></tr>
+          <tr><td>퀵 정렬</td><td>불안정</td><td>피벗을 기준으로 먼 위치의 값끼리 교환하기 때문입니다</td></tr>
+        </table>
+      </div>
+    `
+  };
+
   const sampleCode = {
     bubble: {
       python: `def bubble_sort(arr):
@@ -1401,6 +1638,12 @@ int main() {
       { key:"queue", label:"큐" },
       { key:"linkedlist", label:"연결 리스트" },
       { key:"tree", label:"이진 탐색 트리" }
+    ],
+    concept: [
+      { key:"bigO", label:"시간복잡도" },
+      { key:"space", label:"공간복잡도" },
+      { key:"compare", label:"복잡도 비교" },
+      { key:"stability", label:"안정 정렬" }
     ]
   };
 
@@ -2942,6 +3185,60 @@ int main() {
     return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
 
+  // ===================================================================
+  // 개념 설명 탭
+  // ===================================================================
+  function renderConcept(key){
+    const body = document.getElementById("conceptBody");
+    const make = conceptContent[key];
+    body.innerHTML = make ? make() : "";
+    if(key === "compare") drawComplexityChart();
+  }
+
+  function drawComplexityChart(){
+    const holder = document.getElementById("complexityChart");
+    if(!holder) return;
+    const W = 720, H = 260, padL = 44, padR = 16, padT = 14, padB = 30;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+
+    const maxN = 40;
+    const curves = [
+      { color:"#5B8C6E", fn: n => Math.log2(Math.max(n,1)) },
+      { color:"#3F5A4C", fn: n => n },
+      { color:"#D98E48", fn: n => n * Math.log2(Math.max(n,1)) },
+      { color:"#B5483A", fn: n => n * n }
+    ];
+    // 화면에 보기 좋게 y축 상한을 고정합니다 (O(n²)은 금방 치솟기 때문)
+    const maxY = 400;
+
+    const x = n => padL + (n / maxN) * plotW;
+    const y = v => padT + plotH - (Math.min(v, maxY) / maxY) * plotH;
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">`;
+
+    // 축
+    svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="#D9D2C2" stroke-width="1.5"/>`;
+    svg += `<line x1="${padL}" y1="${padT+plotH}" x2="${padL+plotW}" y2="${padT+plotH}" stroke="#D9D2C2" stroke-width="1.5"/>`;
+
+    // 축 라벨
+    svg += `<text x="${padL-8}" y="${padT+6}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10" fill="#3F5A4C">계산 횟수</text>`;
+    svg += `<text x="${padL+plotW}" y="${padT+plotH+20}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="10" fill="#3F5A4C">데이터 개수 n →</text>`;
+
+    // 곡선
+    curves.forEach(c => {
+      let d = "";
+      for(let n = 1; n <= maxN; n += 0.5){
+        const px = x(n), py = y(c.fn(n));
+        d += (d === "" ? "M" : "L") + px.toFixed(1) + " " + py.toFixed(1);
+        if(c.fn(n) > maxY) break;   // 화면 밖으로 나가면 멈춤
+      }
+      svg += `<path d="${d}" fill="none" stroke="${c.color}" stroke-width="2.5" stroke-linecap="round"/>`;
+    });
+
+    svg += `</svg>`;
+    holder.innerHTML = svg;
+  }
+
   function renderSampleCode(algo){
     const section = document.getElementById("codeSection");
     const pre = document.getElementById("codePre");
@@ -3063,6 +3360,7 @@ int main() {
         algoTabsEl.querySelectorAll(".algo-tab").forEach(t=>t.classList.remove("active"));
         btn.classList.add("active");
         if(category === "ds") rebuildDs(a.key);
+        else if(category === "concept"){ currentAlgo = a.key; renderConcept(a.key); }
         else rebuild(a.key);
       });
       algoTabsEl.appendChild(btn);
@@ -3077,6 +3375,16 @@ int main() {
 
     const mainStageEl = document.getElementById("mainStage");
     const dsStageEl = document.getElementById("dsStage");
+    const conceptStageEl = document.getElementById("conceptStage");
+    const codeSectionEl = document.getElementById("codeSection");
+
+    // 개념 탭에서는 예시 코드 섹션을 숨깁니다
+    if(codeSectionEl) codeSectionEl.style.display = (cat === "concept") ? "none" : "block";
+    conceptStageEl.style.display = (cat === "concept") ? "block" : "none";
+
+    // 개념 탭은 자체 본문에 설명이 있으므로 상단 설명 박스는 숨깁니다
+    const explainBoxEl = document.getElementById("explainBox");
+    if(explainBoxEl) explainBoxEl.style.display = (cat === "concept") ? "none" : "block";
 
     if(cat === "sort"){
       pageTitleEl.textContent = "정렬 알고리즘 시각화";
@@ -3102,11 +3410,16 @@ int main() {
       sizeInputEl.min = 5; sizeInputEl.max = 14; sizeInputEl.value = 9;
       currentAlgo = "bfs";
       customInputRowEl.style.display = "none";
-    } else {
+    } else if(cat === "ds"){
       pageTitleEl.textContent = "자료구조 시각화";
       mainStageEl.style.display = "none";
       dsStageEl.style.display = "block";
       currentAlgo = "stack";
+    } else {
+      pageTitleEl.textContent = "알고리즘 개념";
+      mainStageEl.style.display = "none";
+      dsStageEl.style.display = "none";
+      currentAlgo = "bigO";
     }
 
     renderAlgoTabs();
@@ -3120,8 +3433,10 @@ int main() {
       startNode = 0;
       rebuild(currentAlgo);
       resizeCanvas();
-    } else {
+    } else if(cat === "ds"){
       rebuildDs(currentAlgo);
+    } else {
+      renderConcept(currentAlgo);
     }
   }
 
