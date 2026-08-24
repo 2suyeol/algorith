@@ -212,6 +212,9 @@
   .bar.compare .bar-fill{ background:var(--compare); }
   .bar.swap .bar-fill{ background:var(--swap); }
   .bar.done .bar-fill{ background:var(--done); }
+  /* 탐색에서 범위 밖으로 밀려난 위치는 흐리게 표시 */
+  .bar.excluded .bar-fill{ opacity:.22; }
+  .bar.excluded .bar-val{ opacity:.35; }
   .bar-val{
     font-family:var(--mono);
     font-size:11px;
@@ -778,6 +781,7 @@
 
     <div class="category-tabs" role="tablist" aria-label="카테고리 선택">
       <button class="category-tab active" data-category="sort">정렬</button>
+      <button class="category-tab" data-category="search">탐색</button>
       <button class="category-tab" data-category="graph">그래프 탐색</button>
       <button class="category-tab" data-category="ds">자료구조</button>
       <button class="category-tab" data-category="concept">개념</button>
@@ -852,6 +856,12 @@
       <div class="meta">시간복잡도<b id="metaGraphComplexity">—</b></div>
     </div>
 
+    <div class="meta-row" id="metaRowSearch" style="display:none;">
+      <div class="meta">찾는 값<b id="metaSearchTarget">—</b></div>
+      <div class="meta">비교 횟수<b id="metaSearchCompare">0</b></div>
+      <div class="meta">실제 비교 / 이론값<b id="metaSearchComplexity">—</b></div>
+    </div>
+
     <div class="regen-row">
       <label for="sizeInput" id="sizeLabel">배열 크기</label>
       <input type="number" id="sizeInput" min="5" max="40" value="20">
@@ -863,6 +873,13 @@
       <input type="text" id="customInput" placeholder="예: 5, 3, 8, 1, 9" class="custom-input">
       <button class="btn ghost" id="btnApplyCustom">적용</button>
       <span class="custom-input-error" id="customInputError"></span>
+    </div>
+
+    <div class="regen-row" id="searchTargetRow" style="display:none;">
+      <label for="searchTargetInput">찾을 값</label>
+      <input type="number" id="searchTargetInput" min="1" max="999">
+      <button class="btn ghost" id="btnApplySearchTarget">탐색 시작</button>
+      <span class="custom-input-error" id="searchTargetError"></span>
     </div>
   </div>
 
@@ -951,6 +968,8 @@
   // 그래프 상태
   let nodes = [], edges = [], adj = [];
   let startNode = 0;
+  // 탐색 상태
+  let searchTarget = null;
 
   // ===================================================================
   // DOM 참조
@@ -976,6 +995,14 @@
   const metaVisitedEl = document.getElementById("metaVisited");
   const metaEdgesEl = document.getElementById("metaEdges");
   const metaGraphComplexityEl = document.getElementById("metaGraphComplexity");
+  const metaRowSearchEl = document.getElementById("metaRowSearch");
+  const metaSearchTargetEl = document.getElementById("metaSearchTarget");
+  const metaSearchCompareEl = document.getElementById("metaSearchCompare");
+  const metaSearchComplexityEl = document.getElementById("metaSearchComplexity");
+  const searchTargetRowEl = document.getElementById("searchTargetRow");
+  const searchTargetInputEl = document.getElementById("searchTargetInput");
+  const searchTargetErrorEl = document.getElementById("searchTargetError");
+  const btnApplySearchTarget = document.getElementById("btnApplySearchTarget");
 
   const sizeInputEl = document.getElementById("sizeInput");
   const sizeLabelEl = document.getElementById("sizeLabel");
@@ -1334,6 +1361,101 @@ int main() {
     vector<int> data = {5, 3, 8, 1, 9};
     mergeSort(data, 0, data.size() - 1);
     for (int x : data) cout << x << " ";   // 1 3 5 8 9
+}`
+    },
+
+    linear: {
+      python: `def linear_search(arr, target):
+    # 맨 앞에서부터 하나씩 차례대로 비교합니다
+    for i in range(len(arr)):
+        if arr[i] == target:
+            return i          # 찾으면 그 위치를 반환
+    return -1                 # 끝까지 없으면 -1
+
+
+data = [2, 5, 1, 6, 4, 5]
+
+print(linear_search(data, 6))   # 3
+print(linear_search(data, 99))  # -1 (없음)
+
+
+# 파이썬 내장 기능을 쓴다면
+print(6 in data)          # True
+print(data.index(6))      # 3 (없으면 오류가 납니다)`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int linearSearch(const vector<int>& arr, int target) {
+    // 맨 앞에서부터 하나씩 차례대로 비교합니다
+    for (int i = 0; i < (int)arr.size(); i++)
+        if (arr[i] == target) return i;   // 찾으면 그 위치를 반환
+    return -1;                            // 끝까지 없으면 -1
+}
+
+int main() {
+    vector<int> data = {2, 5, 1, 6, 4, 5};
+
+    cout << linearSearch(data, 6)  << endl;   // 3
+    cout << linearSearch(data, 99) << endl;   // -1 (없음)
+}`
+    },
+
+    binary: {
+      python: `def binary_search(arr, target):
+    left, right = 0, len(arr) - 1
+
+    while left <= right:
+        mid = (left + right) // 2   # 가운데 위치 (// 는 몫만 취함)
+
+        if arr[mid] == target:
+            return mid              # 찾음
+        elif arr[mid] < target:
+            left = mid + 1          # 오른쪽 절반만 남김
+        else:
+            right = mid - 1         # 왼쪽 절반만 남김
+
+    return -1                       # 범위가 사라지면 없는 것
+
+
+# 반드시 정렬되어 있어야 합니다
+data = [1, 4, 6, 9, 10, 24, 31, 42, 50, 52]
+
+print(binary_search(data, 52))   # 9
+print(binary_search(data, 7))    # -1 (없음)
+
+
+# 파이썬 표준 라이브러리를 쓴다면
+import bisect
+i = bisect.bisect_left(data, 52)
+print(i if i < len(data) and data[i] == 52 else -1)`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int binarySearch(const vector<int>& arr, int target) {
+    int left = 0, right = arr.size() - 1;
+
+    while (left <= right) {
+        int mid = (left + right) / 2;   // 가운데 위치
+
+        if (arr[mid] == target) return mid;   // 찾음
+        else if (arr[mid] < target) left = mid + 1;   // 오른쪽 절반만
+        else right = mid - 1;                         // 왼쪽 절반만
+    }
+    return -1;   // 범위가 사라지면 없는 것
+}
+
+int main() {
+    // 반드시 정렬되어 있어야 합니다
+    vector<int> data = {1, 4, 6, 9, 10, 24, 31, 42, 50, 52};
+
+    cout << binarySearch(data, 52) << endl;   // 9
+    cout << binarySearch(data, 7)  << endl;   // -1 (없음)
+
+    // C++ 표준 라이브러리를 쓴다면
+    cout << binary_search(data.begin(), data.end(), 52) << endl;   // 1 (true)
 }`
     },
 
@@ -1881,6 +2003,10 @@ int main() {
       { key:"quick", label:"퀵 정렬" },
       { key:"merge", label:"병합 정렬" }
     ],
+    search: [
+      { key:"linear", label:"순차 탐색" },
+      { key:"binary", label:"이진 탐색" }
+    ],
     graph: [
       { key:"bfs", label:"BFS" },
       { key:"dfs", label:"DFS" },
@@ -1935,6 +2061,20 @@ int main() {
       detail: "배열을 절반씩 재귀적으로 분할해 더 이상 나눌 수 없는 단일 원소까지 쪼갠 뒤, 두 개의 정렬된 부분 배열을 비교하며 하나로 합치는(merge) 과정을 반복합니다. 분할과 병합이 항상 균등하게 일어나기 때문에 입력 데이터의 상태와 무관하게 항상 O(n log n)을 보장하는 것이 가장 큰 장점이며, 안정 정렬이라 같은 값의 원래 순서가 유지됩니다. 다만 병합 과정에서 추가 배열 공간이 필요합니다.",
       time: "O(n log n) (항상 보장)", space: "O(n)", stable: "안정 정렬",
       trait: "성능이 입력 상태에 영향받지 않음"
+    },
+    linear: {
+      title: "순차 탐색 (Linear Search)",
+      simple: "맨 앞에서부터 하나씩 차례대로 비교하며 찾는 값을 만날 때까지 훑어보는 방법이에요. 데이터가 정렬되어 있지 않아도 쓸 수 있습니다.",
+      detail: "배열의 첫 번째 원소부터 시작해 찾으려는 값과 하나씩 비교합니다. 값이 같으면 탐색을 끝내고, 다르면 다음 원소로 넘어갑니다. 정렬 여부와 상관없이 어떤 데이터에도 쓸 수 있다는 게 장점이지만, 찾는 값이 뒤쪽에 있거나 아예 없으면 전체 데이터를 모두 비교해야 합니다. 데이터가 100,000개라면 최악의 경우 100,000번을 비교하게 됩니다.",
+      time: "최선 O(1) · 평균/최악 O(n)", space: "O(1)", structure: "배열 (정렬 불필요)",
+      trait: "정렬되지 않은 데이터에도 사용 가능, 데이터가 적을 때 효율적"
+    },
+    binary: {
+      title: "이진 탐색 (Binary Search)",
+      simple: "정렬된 데이터에서 가운데 값과 비교해 찾는 범위를 절반씩 줄여가며 찾는 방법이에요. 숫자 맞히기 게임에서 '업/다운'을 듣고 범위를 좁히는 것과 같습니다.",
+      detail: "탐색 범위의 가운데 위치(mid)를 구해 그 값과 찾는 값을 비교합니다. 같으면 탐색을 끝내고, 찾는 값이 더 작으면 왼쪽 절반만, 더 크면 오른쪽 절반만 남겨서 같은 과정을 반복합니다. 한 번 비교할 때마다 볼 범위가 절반으로 줄어들기 때문에 매우 빠릅니다. 정렬된 100,000개 데이터라면 100,000 → 50,000 → 25,000 → ... 순으로 좁혀져 약 17번이면 탐색이 끝납니다. 다만 데이터가 반드시 정렬되어 있어야 사용할 수 있습니다.",
+      time: "O(log n)", space: "O(1)", structure: "정렬된 배열 (필수)",
+      trait: "데이터가 많을수록 순차 탐색보다 압도적으로 빠름"
     },
     bfs: {
       title: "BFS (너비 우선 탐색, Breadth-First Search)",
@@ -2195,6 +2335,102 @@ int main() {
     const lastDigit = Math.abs(Math.floor(num)) % 10;
     const hasBatchim = [0,1,3,6,7,8].includes(lastDigit);
     return hasBatchim ? withBatchim : withoutBatchim;
+  }
+
+  // ===================================================================
+  // 탐색: 스텝 빌더 (순차 탐색 / 이진 탐색)
+  // ===================================================================
+  function buildSearchSteps(algo, inputArr, target){
+    const arr = inputArr.slice();
+    const log = [];
+    let compareCount = 0;
+
+    function snapshot(extra){
+      log.push(Object.assign({
+        array: arr.slice(),
+        compareIdx: [],      // 지금 비교 중인 위치
+        rangeIdx: [],        // 아직 탐색 범위에 남아 있는 위치
+        excludedIdx: [],     // 범위에서 제외된 위치
+        foundIdx: null,      // 찾은 위치
+        compareCount,
+        note: ""
+      }, extra || {}));
+    }
+
+    const allIdx = arr.map((_, i) => i);
+
+    if(algo === "linear"){
+      snapshot({ rangeIdx: allIdx.slice(),
+        note: `${target}을(를) 찾습니다. 순차 탐색은 맨 앞에서부터 하나씩 차례대로 비교합니다.` });
+
+      for(let i = 0; i < arr.length; i++){
+        compareCount++;
+        const checked = [];
+        for(let k = 0; k < i; k++) checked.push(k);
+
+        snapshot({ compareIdx: [i], excludedIdx: checked, rangeIdx: allIdx.slice(i),
+          compareCount,
+          note: `${i}번 위치의 ${arr[i]}와(과) 찾는 값 ${target}을(를) 비교합니다.` });
+
+        if(arr[i] === target){
+          snapshot({ foundIdx: i, excludedIdx: checked, compareCount,
+            note: `찾았습니다! ${target}은(는) ${i}번 위치에 있습니다. 총 ${compareCount}번 비교했습니다.` });
+          return log;
+        }
+
+        snapshot({ excludedIdx: checked.concat([i]), rangeIdx: allIdx.slice(i+1),
+          compareCount,
+          note: `${arr[i]}은(는) 찾는 값이 아니므로 다음 위치로 넘어갑니다.` });
+      }
+
+      snapshot({ excludedIdx: allIdx.slice(), compareCount,
+        note: `끝까지 확인했지만 ${target}은(는) 없습니다. 전체 ${arr.length}개를 모두 비교해야 했습니다.` });
+    }
+
+    else if(algo === "binary"){
+      let left = 0, right = arr.length - 1;
+
+      snapshot({ rangeIdx: allIdx.slice(),
+        note: `${target}을(를) 찾습니다. 이진 탐색은 데이터가 정렬되어 있어야 하며, 범위를 절반씩 줄여갑니다.` });
+
+      while(left <= right){
+        const mid = Math.floor((left + right) / 2);
+        const range = [];
+        for(let k = left; k <= right; k++) range.push(k);
+        const excluded = allIdx.filter(k => k < left || k > right);
+
+        compareCount++;
+        snapshot({ compareIdx: [mid], rangeIdx: range, excludedIdx: excluded, compareCount,
+          note: `탐색 범위는 ${left}~${right}번입니다. 가운데 위치는 (${left}+${right})/2 = ${mid}번이고, 그 값은 ${arr[mid]}입니다.` });
+
+        if(arr[mid] === target){
+          snapshot({ foundIdx: mid, rangeIdx: range, excludedIdx: excluded, compareCount,
+            note: `찾았습니다! ${target}은(는) ${mid}번 위치에 있습니다. 총 ${compareCount}번 만에 찾았습니다.` });
+          return log;
+        }
+
+        if(arr[mid] < target){
+          left = mid + 1;
+          const newRange = [];
+          for(let k = left; k <= right; k++) newRange.push(k);
+          snapshot({ rangeIdx: newRange, excludedIdx: allIdx.filter(k => k < left || k > right),
+            compareCount,
+            note: `${arr[mid]} < ${target} 이므로 찾는 값은 오른쪽에 있습니다. 왼쪽 절반을 버리고 ${left}~${right}번만 봅니다.` });
+        } else {
+          right = mid - 1;
+          const newRange = [];
+          for(let k = left; k <= right; k++) newRange.push(k);
+          snapshot({ rangeIdx: newRange, excludedIdx: allIdx.filter(k => k < left || k > right),
+            compareCount,
+            note: `${arr[mid]} > ${target} 이므로 찾는 값은 왼쪽에 있습니다. 오른쪽 절반을 버리고 ${left <= right ? left + "~" + right + "번만" : "남은 범위가 없어 탐색을"} ${left <= right ? "봅니다" : "종료합니다"}.` });
+        }
+      }
+
+      snapshot({ excludedIdx: allIdx.slice(), compareCount,
+        note: `탐색 범위가 사라졌습니다. ${target}은(는) 배열에 없습니다. 총 ${compareCount}번만 비교했습니다.` });
+    }
+
+    return log;
   }
 
   function buildGraphSteps(algo, start){
@@ -3221,6 +3457,36 @@ int main() {
     metaComplexityEl.textContent = `${step.compareCount} / ${theo} (${complexityFormula[currentAlgo].label})`;
   }
 
+  function applySearchStep(step){
+    array = step.array;
+    const bars = barsEl.children;
+    if(bars.length !== array.length) renderBars();
+    const max = Math.max(...array, 1);
+
+    for(let i=0;i<array.length;i++){
+      const bar = bars[i];
+      if(!bar) continue;
+      bar.className = "bar";
+      const fill = bar.querySelector(".bar-fill");
+      const valEl = bar.querySelector(".bar-val");
+      fill.style.height = (array[i]/max*100) + "%";
+      valEl.textContent = array[i];
+
+      // 범위 밖으로 밀려난 위치는 흐리게, 비교 중인 위치는 강조, 찾은 위치는 초록
+      if(step.excludedIdx && step.excludedIdx.includes(i)) bar.classList.add("excluded");
+      if(step.compareIdx && step.compareIdx.includes(i)) bar.classList.add("compare");
+      if(step.foundIdx === i) bar.classList.add("done");
+    }
+
+    metaSearchCompareEl.textContent = step.compareCount;
+    metaSearchTargetEl.textContent = searchTarget;
+    const label = currentAlgo === "linear" ? "O(n)" : "O(log n)";
+    const theo = currentAlgo === "linear"
+      ? array.length
+      : Math.max(1, Math.ceil(Math.log2(Math.max(array.length, 2))));
+    metaSearchComplexityEl.textContent = `${step.compareCount} / 최대 ${theo}회 (${label})`;
+  }
+
   // ===================================================================
   // 그래프 렌더링
   // ===================================================================
@@ -3556,6 +3822,7 @@ int main() {
   // ===================================================================
   function applyStep(step){
     if(category === "sort") applySortStep(step);
+    else if(category === "search") applySearchStep(step);
     else applyGraphStep(step);
 
     highlightNarration();
@@ -3648,10 +3915,26 @@ int main() {
       graphAreaEl.style.display = "none";
       metaRowSortEl.style.display = "flex";
       metaRowGraphEl.style.display = "none";
+      metaRowSearchEl.style.display = "none";
       sizeLabelEl.textContent = "배열 크기";
       sizeInputEl.min = 5; sizeInputEl.max = 40; sizeInputEl.value = 20;
       currentAlgo = "bubble";
       customInputRowEl.style.display = "flex";
+      searchTargetRowEl.style.display = "none";
+    } else if(cat === "search"){
+      pageTitleEl.textContent = "탐색 알고리즘 시각화";
+      mainStageEl.style.display = "block";
+      dsStageEl.style.display = "none";
+      barsEl.style.display = "flex";
+      graphAreaEl.style.display = "none";
+      metaRowSortEl.style.display = "none";
+      metaRowGraphEl.style.display = "none";
+      metaRowSearchEl.style.display = "flex";
+      sizeLabelEl.textContent = "배열 크기";
+      sizeInputEl.min = 5; sizeInputEl.max = 20; sizeInputEl.value = 12;
+      currentAlgo = "linear";
+      customInputRowEl.style.display = "flex";
+      searchTargetRowEl.style.display = "flex";
     } else if(cat === "graph"){
       pageTitleEl.textContent = "그래프 탐색 알고리즘 시각화";
       mainStageEl.style.display = "block";
@@ -3660,26 +3943,33 @@ int main() {
       graphAreaEl.style.display = "block";
       metaRowSortEl.style.display = "none";
       metaRowGraphEl.style.display = "flex";
+      metaRowSearchEl.style.display = "none";
       sizeLabelEl.textContent = "노드 개수";
       sizeInputEl.min = 5; sizeInputEl.max = 14; sizeInputEl.value = 9;
       currentAlgo = "bfs";
       customInputRowEl.style.display = "none";
+      searchTargetRowEl.style.display = "none";
     } else if(cat === "ds"){
       pageTitleEl.textContent = "자료구조 시각화";
       mainStageEl.style.display = "none";
       dsStageEl.style.display = "block";
       currentAlgo = "stack";
+      searchTargetRowEl.style.display = "none";
     } else {
       pageTitleEl.textContent = "알고리즘 개념";
       mainStageEl.style.display = "none";
       dsStageEl.style.display = "none";
       currentAlgo = "bigO";
+      searchTargetRowEl.style.display = "none";
     }
 
     renderAlgoTabs();
 
     if(cat === "sort"){
       array = genArray(Number(sizeInputEl.value));
+      rebuild(currentAlgo);
+    } else if(cat === "search"){
+      prepareSearchArray();
       rebuild(currentAlgo);
     } else if(cat === "graph"){
       const g = genGraph(Number(sizeInputEl.value));
@@ -3694,11 +3984,31 @@ int main() {
     }
   }
 
+  // 탐색용 배열을 준비합니다.
+  // 이진 탐색은 정렬된 데이터가 필수이므로, 탐색 탭에서는 항상 정렬된 배열을 씁니다.
+  function prepareSearchArray(){
+    const n = Math.max(5, Math.min(20, Number(sizeInputEl.value) || 12));
+
+    // 중복 없는 값을 넓은 범위에서 뽑아, 생성할 때마다 확실히 달라 보이게 합니다
+    const pool = new Set();
+    while(pool.size < n){
+      pool.add(Math.floor(Math.random() * 199) + 1);   // 1 ~ 199
+    }
+    array = Array.from(pool).sort((a,b) => a-b);
+
+    // 찾을 값은 배열 안에서 하나 골라 기본값으로 둡니다
+    searchTarget = array[Math.floor(Math.random() * array.length)];
+    searchTargetInputEl.value = searchTarget;
+    searchTargetErrorEl.textContent = "";
+  }
+
   function rebuild(algo){
     currentAlgo = algo;
     stopPlay();
     if(category === "sort"){
       steps = buildSortSteps(algo, array);
+    } else if(category === "search"){
+      steps = buildSearchSteps(algo, array, searchTarget);
     } else {
       steps = buildGraphSteps(algo, startNode);
     }
@@ -3711,7 +4021,7 @@ int main() {
   }
 
   function renderBars_or_draw(){
-    if(category === "sort"){
+    if(category === "sort" || category === "search"){
       renderBars();
     }
     // 그래프는 applyStep -> applyGraphStep -> drawGraph에서 처리됨
@@ -3724,6 +4034,11 @@ int main() {
       rebuild(currentAlgo);
       customInputErrorEl.textContent = "";
       customInputEl.value = "";
+    } else if(category === "search"){
+      prepareSearchArray();
+      rebuild(currentAlgo);
+      customInputErrorEl.textContent = "";
+      customInputEl.value = "";
     } else {
       const n = Math.max(5, Math.min(14, Number(sizeInputEl.value) || 9));
       const g = genGraph(n);
@@ -3731,6 +4046,25 @@ int main() {
       startNode = 0;
       rebuild(currentAlgo);
     }
+  }
+
+  // 탐색 탭에서 찾을 값을 바꿨을 때 적용합니다
+  function applySearchTarget(){
+    const raw = searchTargetInputEl.value.trim();
+    if(!raw){
+      searchTargetErrorEl.textContent = "찾을 값을 입력해주세요.";
+      return;
+    }
+    const v = Number(raw);
+    if(Number.isNaN(v) || !Number.isInteger(v)){
+      searchTargetErrorEl.textContent = "정수를 입력해주세요.";
+      return;
+    }
+    searchTargetErrorEl.textContent = array.includes(v)
+      ? ""
+      : "이 값은 배열에 없어서, 끝까지 찾다 실패하는 과정을 보여줍니다.";
+    searchTarget = v;
+    rebuild(currentAlgo);
   }
 
   function applyCustomArray(){
@@ -3762,6 +4096,20 @@ int main() {
     customInputErrorEl.textContent = "";
     array = parsed;
     sizeInputEl.value = parsed.length;
+
+    // 탐색 탭에서는 이진 탐색을 위해 정렬된 배열이 필요합니다
+    if(category === "search"){
+      const wasSorted = parsed.every((v, i) => i === 0 || parsed[i-1] <= v);
+      array = parsed.slice().sort((a,b) => a-b);
+      if(!wasSorted){
+        customInputErrorEl.textContent = "탐색은 정렬된 데이터가 필요해서 자동으로 오름차순 정렬했습니다.";
+      }
+      if(!array.includes(searchTarget)){
+        searchTarget = array[Math.floor(array.length/2)];
+        searchTargetInputEl.value = searchTarget;
+      }
+    }
+
     rebuild(currentAlgo);
   }
 
@@ -3806,6 +4154,10 @@ int main() {
     if(!expanded) highlightNarration();
   });
   btnApplyCustom.addEventListener("click", applyCustomArray);
+  btnApplySearchTarget.addEventListener("click", applySearchTarget);
+  searchTargetInputEl.addEventListener("keydown", (e) => {
+    if(e.key === "Enter") applySearchTarget();
+  });
   customInputEl.addEventListener("keydown", (e) => {
     if(e.key === "Enter") applyCustomArray();
   });
