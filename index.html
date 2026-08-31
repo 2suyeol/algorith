@@ -22,6 +22,28 @@
     --frontier:#C9A876;
     --mono:'IBM Plex Mono', monospace;
     --sans:'Pretendard', sans-serif;
+    --code-bg:#1F3A2E;
+    --code-fg:#DCD4C4;
+  }
+
+  /* 다크모드: 종이톤을 어두운 잉크톤으로 뒤집고, 강조색은 살짝 밝게 조정합니다 */
+  html[data-theme="dark"]{
+    --paper:#171C1A;
+    --paper-deep:#1F2623;
+    --ink:#E8E3D8;
+    --ink-soft:#A7B5AC;
+    --line:#333D38;
+    --compare:#E3A263;
+    --swap:#D06A5C;
+    --done:#7BAE8C;
+    --frontier:#B79A6E;
+    --code-bg:#0F1412;
+    --code-fg:#D5CDBD;
+  }
+
+  /* 다크모드에서는 그림자가 잘 안 보이므로 조금 진하게 */
+  html[data-theme="dark"] .ds-box{
+    box-shadow:0 2px 8px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box;}
   body{
@@ -40,6 +62,29 @@
     margin-bottom:0;
     padding-bottom:24px;
   }
+  .header-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .theme-toggle{
+    font-family:var(--mono);
+    font-size:11.5px;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    background:transparent;
+    color:var(--ink-soft);
+    cursor:pointer;
+    white-space:nowrap;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .theme-toggle:hover{
+    border-color:var(--ink-soft);
+    color:var(--ink);
+  }
+
   .eyebrow{
     font-family:var(--mono);
     font-size:12px;
@@ -677,7 +722,7 @@
   /* 페이지 하단 예시 코드 */
   .code-section{
     margin-top:28px;
-    background:var(--ink);
+    background:var(--code-bg);
     border-radius:14px;
     padding:18px 22px 22px;
   }
@@ -695,7 +740,7 @@
     font-weight:600;
     letter-spacing:0.06em;
     text-transform:uppercase;
-    color:var(--paper);
+    color:#F7F3EC;
     opacity:.75;
   }
   .code-section .explain-toggle{
@@ -705,15 +750,15 @@
     color:rgba(247,243,236,.7);
   }
   .code-section .explain-toggle-btn.active{
-    background:var(--paper);
-    color:var(--ink);
+    background:#F7F3EC;
+    color:#1F3A2E;
   }
   .code-pre{
     margin:0;
     font-family:var(--mono);
     font-size:13px;
     line-height:1.75;
-    color:#DCD4C4;
+    color:var(--code-fg);
     overflow-x:auto;
     white-space:pre;
     tab-size:2;
@@ -776,7 +821,10 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Algorithm Visualizer</div>
+    <div class="header-top">
+      <div class="eyebrow">Algorithm Visualizer</div>
+      <button class="theme-toggle" id="themeToggle" aria-label="화면 모드 전환">다크 모드</button>
+    </div>
     <h1 id="pageTitle">알고리즘 시각화</h1>
 
     <div class="category-tabs" role="tablist" aria-label="카테고리 선택">
@@ -4219,6 +4267,57 @@ int main() {
     if(e.code === "ArrowRight"){ stopPlay(); goTo(cur+1); }
     if(e.code === "ArrowLeft"){ stopPlay(); goTo(cur-1); }
   });
+
+  // ===================================================================
+  // 다크 모드
+  // ===================================================================
+  const themeToggleEl = document.getElementById("themeToggle");
+
+  function applyTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    themeToggleEl.textContent = theme === "dark" ? "라이트 모드" : "다크 모드";
+    // 그래프 캔버스는 CSS 변수를 직접 읽어 그리므로, 색상 캐시를 비우고 다시 그립니다
+    cssCache = {};
+    if(category === "graph"){
+      resizeCanvas();
+    } else if(category === "ds" && currentAlgo === "tree"){
+      renderDsView();
+    } else if(category === "concept" && currentAlgo === "compare"){
+      drawComplexityChart();
+    }
+  }
+
+  function getSavedTheme(){
+    try{
+      return localStorage.getItem("algoviz-theme");
+    } catch(e){
+      return null;   // 저장이 막힌 환경에서도 동작하도록
+    }
+  }
+
+  function saveTheme(theme){
+    try{
+      localStorage.setItem("algoviz-theme", theme);
+    } catch(e){
+      // 저장 실패는 무시합니다 (이번 방문에만 적용됨)
+    }
+  }
+
+  themeToggleEl.addEventListener("click", () => {
+    const now = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    applyTheme(now);
+    saveTheme(now);
+  });
+
+  // 저장된 설정이 있으면 그것을, 없으면 시스템 설정을 따릅니다
+  const savedTheme = getSavedTheme();
+  if(savedTheme){
+    applyTheme(savedTheme);
+  } else if(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches){
+    applyTheme("dark");
+  } else {
+    applyTheme("light");
+  }
 
   window.addEventListener("resize", resizeCanvas);
 
